@@ -293,20 +293,27 @@ export class LandingPageComponent implements OnInit {
 
   /**
     * Deletes active party from both UI and API/DB
+    * Does not allow the user to delete the last party
     * @param partyNum active party's id to be deleted
   */
   deleteParty(partyNum: number) {
-    this.dataService.deleteParty(partyNum)
-      .subscribe(data => {
-        this.getParties(null);
-        this.snackBar.open('Party deleted', 'Ok!', {
-          duration: 2000,
-        });
-      }, error => {
-        this.snackBar.open('An error occurred, please try again', 'Ok!', {
-          duration: 2000,
-        });
+    if (this.allParties.length < 2) {
+      this.snackBar.open('Cannot delete last party', 'Ok!', {
+        duration: 2000,
       });
+    } else {
+      this.dataService.deleteParty(partyNum)
+        .subscribe(data => {
+          this.getParties(null);
+          this.snackBar.open('Party deleted', 'Ok!', {
+            duration: 2000,
+          });
+        }, error => {
+          this.snackBar.open('An error occurred, please try again', 'Ok!', {
+            duration: 2000,
+          });
+        });
+    }
   }
 
   /**
