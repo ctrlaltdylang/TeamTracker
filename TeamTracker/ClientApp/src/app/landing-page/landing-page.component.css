@@ -1,0 +1,25 @@
+.whitespace {
+  flex: 1 1 auto;
+}
+
+.leftspace{
+  margin-left: 15px;
+}
+
+.bottomSpacing{
+  margin-bottom: 15px;
+}
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+}
+
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -50px;
+}

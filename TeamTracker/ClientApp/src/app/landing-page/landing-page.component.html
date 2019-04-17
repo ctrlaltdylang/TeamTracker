@@ -1,0 +1,223 @@
+<mat-spinner *ngIf="showSpinner" class="spinner" id="loadingSpinner"><!-- Loading spinner, displays in the middle of the page --></mat-spinner>
+<div *ngIf="!showSpinner" id="screenContainer"><!-- Container for whole page, disappears if the loading spinner is enabled -->
+  <!-- Header bar -->
+  <mat-toolbar id="header">
+    <mat-toolbar-row id="headerRow1">
+      <span class="whitespace" id="whiteSpace1"><!-- White space fills screen for alignments, pushes buttons to right side of screen --></span>
+      <!-- Toggles between Contributor and Visitor modes -->
+      <button mat-raised-button color="primary" (click)="changeStatus()" id="btnContributor" matTooltip="Click here to make edits, or return to view-only mode">
+        Switch to {{ contributorStatus ? 'Visitor' : 'Contributor' }} View
+      </button>
+    </mat-toolbar-row>
+    <mat-toolbar-row id="headerRow2">
+      <span id="lblParty">Party: </span>
+      <button mat-raised-button color="secondary" class="leftspace" id="changePartyMenu" [matMenuTriggerFor]="menu" matTooltip="Change the active party">{{ selectedParty.name }}</button>
+      <!-- Drop Down Menu for changing active party's logo -->
+      <mat-menu #menu="matMenu" id="changePartyList">
+        <button mat-menu-item id="btnChangeParty" *ngFor="let party of allParties" (click)="changeSelectedParty(party)"> {{ party.name }}</button>
+      </mat-menu>
+      <i class="material-icons leftspace" matTooltip="{{ selectedParty.name }}'s Logo" id="logo">{{ selectedParty.logo }}</i>
+      <span class="whitespace" id="whiteSpace2"><!-- White space fills screen for alignments, pushes buttons to right side of screen --></span>
+      <!-- Add Party button toggles the Add Party UI elements -->
+      <button mat-raised-button id="btnAddParty" color="accent" *ngIf="contributorStatus" (click)="toggleAddParty()" matTooltip="Add a party to the current list">
+        Add Party</button>
+      <!-- Edit Party button toggles the Edit Party UI elements -->
+      <button mat-raised-button id="btnEditParty" color="accent" class="leftspace" *ngIf="contributorStatus" (click)="toggleEditParty(selectedParty)" matTooltip="Make changes to {{ selectedParty.name }}">
+        Edit Party</button>
+      <button mat-raised-button color="warn" class="leftspace" id="btnDeleteParty" *ngIf="contributorStatus" (click)="deleteParty(selectedParty.id)"
+              matTooltip="Delete {{ selectedParty.name }}, this will also delete all party members">Delete Party</button>
+    </mat-toolbar-row>
+  </mat-toolbar>
+  <!-- Add Party UI Elements -->
+  <div *ngIf="addParty" class="leftspace" id="addPartyElements">
+    <mat-form-field id="newPartyInputForm">
+      <input matInput id="newPartyInput" placeholder="Party Name: " [(ngModel)]="newPartyName">
+    </mat-form-field>
+    <button mat-raised-button id="addLogoMenu" color="accent" class="leftspace" [matMenuTriggerFor]="menu" matTooltip="Add a logo to the new party">
+      <mat-icon id="newPartyLogoIcon">{{ newPartyLogo || logoList[0] }}</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu" id="addLogoList">
+      <button mat-menu-item id="btnNewLogo" *ngFor="let logo of logoList" (click)="addLogo(logo)">
+        <mat-icon id="newLogo">{{ logo }}</mat-icon>
+      </button>
+    </mat-menu>
+    <button mat-raised-button color="primary" id="btnSaveNewParty" (click)="addNewParty()" class="leftspace" matTooltip="Save the new party to the current list">Save</button>
+    <button mat-raised-button color="secondary" id="btnCancelNewParty" (click)="addParty = !addParty" class="leftspace" matTooltip="Discard the new team">Cancel</button>
+  </div>
+  <!-- Edit Party UI Elements -->
+  <div *ngIf="updateParty" class="leftspace" id="editPartyElements">
+    <mat-form-field id="updatePartyInputForm">
+      <input matInput id="updatePartyInput" placeholder="New Party Name: " [(ngModel)]="updatePartyName">
+    </mat-form-field>
+    <button mat-raised-button color="accent" class="leftspace" btn="updateLogoMenu" [matMenuTriggerFor]="menu" matTooltip="Change the logo for {{ selectedParty.name }}">
+      <mat-icon id="updatePartyLogoIcon">{{ updatePartyLogo || selectedParty.logo }}</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu" id="updateLogoList">
+      <button mat-menu-item id="btnUpdateLogo" *ngFor="let logo of logoList" (click)="changeLogo(logo)">
+        <mat-icon id="updateLogo">{{ logo }}</mat-icon>
+      </button>
+    </mat-menu>
+    <button mat-raised-button color="primary" (click)="putParty(selectedParty)" class="leftspace" id="btnSaveUpdatedParty" matTooltip="Save the changes made to {{ selectedParty.name }}">Save</button>
+    <button mat-raised-button color="secondary" (click)="updateParty = !updateParty" class="leftspace" id="btnCancelUpdatedParty" matTooltip="Discard the changes made to {{ selectedParty.name }}">Cancel</button>
+  </div>
+  <h3 class="leftspace" id="lblPlayers">Players: </h3>
+  <!-- List of players belonging to the active party -->
+  <!-- Inputs are disabled if application is in Visitor Mode -->
+  <mat-accordion class="bottomSpacing" id="playersContainer">
+    <mat-expansion-panel id="playersPanel" *ngFor="let player of partyPlayers" (opened)="openPanel(player)">
+      <mat-expansion-panel-header id="playersPanelHeader">
+        <mat-panel-title id="playersPanelTitle">
+          <i style="margin-right: 15px;" class="material-icons" id="playerAvatar" matTooltip="{{ player.name }}'s avatar">{{ player.avatar }}</i>
+          {{ player.name }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div *ngIf="contributorStatus" id="contributorPlayerContainer">
+        <mat-form-field id="updatePlayerNameForm">
+          <input matInput id="updatePlayerName" [(ngModel)]="updatePlayerName" placeholder="Update Player Name: ">
+        </mat-form-field><br />
+      </div>
+      <!-- Displays player info in two columns -->
+      <div class="row" id="playerTable">
+        <div class=" column" id="column1">
+          <mat-form-field id="updatePlayerLevelForm">
+            <input matInput id="updatePlayerLevel" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateLevel" placeholder="Level: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerRaceForm">
+            <input matInput id="updatePlayerRace" [disabled]="!contributorStatus" [(ngModel)]="updateRace" placeholder="Race: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerClassForm">
+            <input matInput id="updatePlayerClass" [disabled]="!contributorStatus" [(ngModel)]="updateClass" placeholder="Class: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerClassAlignmentForm">
+            <input matInput id="updatePlayerAlignment" [disabled]="!contributorStatus" [(ngModel)]="updateAlignment" placeholder="Alignment: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerExpForm">
+            <input matInput id="updatePlayerExp" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateExperience" placeholder="Experience: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerHPForm">
+            <input matInput id="updatePlayerHP" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateMaxHP" placeholder="Max HP: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerStrForm">
+            <input matInput id="updatePlayerStr" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateStrength" placeholder="Strength: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerDexForm">
+            <input matInput id="updatePlayerDex" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateDexterity" placeholder="Dexterity: ">
+          </mat-form-field><br />
+        </div>
+        <div class="column" id="column2">
+          <mat-form-field id="updatePlayerConForm">
+            <input matInput id="updatePlayerCon" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateConstitution" placeholder="Constitution: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerIntForm">
+            <input matInput id="updatePlayerInt" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateIntelligence" placeholder="Intelligence: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerWisdomForm">
+            <input matInput id="updatePlayerWisdom" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateWisdom" placeholder="Wisdom: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerCharismaForm">
+            <input matInput id="updatePlayerCharisma" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateCharisma" placeholder="Charisma: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerInitiativeForm">
+            <input matInput id="updatePlayerInitiative" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateInitiative" placeholder="Initiative: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerSpeedForm">
+            <input matInput id="updatePlayerSpeed" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateSpeed" placeholder="Speed: ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerACForm">
+            <input matInput id="updatePlayerAC" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateArmorClass" placeholder="Armor Class (AC): ">
+          </mat-form-field><br />
+          <mat-form-field id="updatePlayerPerceptionForm">
+            <input id="updatePlayerPerception" matInput type="number" [disabled]="!contributorStatus" [(ngModel)]="updatePassivePerception" placeholder="Passive Perception: ">
+          </mat-form-field>
+        </div>
+      </div>
+      <br />
+      <button mat-raised-button color="primary" *ngIf="contributorStatus" (click)="updatePlayer(selectedParty, player)"
+              matTooltip="Save changes made to {{ player.name }}" id="btnSavePlayer">Save</button>
+      <!-- Drop Down Menu for changing selected player's avatar -->
+      <button mat-raised-button color="accent" *ngIf="contributorStatus" class="leftspace" id="btnChangeAvatarMenu" [matMenuTriggerFor]="menu"
+              matTooltip="Change {{ player.name }}'s avatar">
+        <mat-icon id="avatarIcon">{{ updateAvatar || player.avatar }}</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu" id="avatarMenu">
+        <button mat-menu-item *ngFor="let avatar of avatarList" (click)="changeAvatar(avatar)" id="btnChangeAvatar">
+          <mat-icon id="newAvatarIcon">{{ avatar }}</mat-icon>
+        </button>
+      </mat-menu>
+      <button mat-raised-button color="warn" class="leftspace" *ngIf="contributorStatus" (click)="deletePlayer(player.id, selectedParty.id)"
+              matTooltip="This cannot be undone!" id="btnDeletePlayer">Delete {{ player.name }}</button>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <mat-toolbar id="addPlayerToolbar">
+    <mat-toolbar-row id="addPlayerToolbarRow">
+      <span class="whitespace" id="whiteSpace3"><!-- White space fills screen for alignments, pushes buttons to right side of screen --></span>
+      <!-- Add Player button toggles Add Player UI Elements -->
+      <button mat-raised-button id="btnAddPlayer" color="accent" *ngIf="contributorStatus" (click)="addPlayer = !addPlayer">Add Player to {{ selectedParty.name }}</button>
+    </mat-toolbar-row>
+  </mat-toolbar>
+  <!-- Add Player UI Elements -->
+  <div *ngIf="addPlayer" class="leftspace bottomSpacing" id="addPlayerElements">
+    <div class="row" id="addPlayerTable">
+      <div class="column" id="addPlayerColumn1">
+        <mat-form-field id="newPlayerNameForm">
+          <input matInput id="newPlayerName" [(ngModel)]="newPlayerName" placeholder="Name: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerRaceForm">
+          <input matInput id="newPlayerRace" [(ngModel)]="newRace" placeholder="Race: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerClass">
+          <input matInput id="newPlayerClass" [(ngModel)]="newClass" placeholder="Class: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerAlignmentForm">
+          <input matInput id="newPlayerAlignment" [(ngModel)]="newAlignment" placeholder="Alignment: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerHPForm">
+          <input matInput id="newPlayerHP" type="number" [(ngModel)]="newMaxHP" placeholder="Max HP: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerStrForm">
+          <input matInput id="newPlayerStr" type="number" [(ngModel)]="newStrength" placeholder="Strength: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerDexForm">
+          <input matInput id="newPlayerDex" type="number" [(ngModel)]="newDexterity" placeholder="Dexterity: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerConForm">
+          <input matInput id="newPlayerCon" type="number" [(ngModel)]="newConstitution" placeholder="Constitution: ">
+        </mat-form-field>
+      </div>
+      <div class="column" id="addPlayerColumn1">
+        <mat-form-field id="newPlayerIntForm">
+          <input matInput id="newPlayerInt" type="number" [(ngModel)]="newIntelligence" placeholder="Intelligence: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerWisForm">
+          <input matInput id="newPlayerWis" type="number" [(ngModel)]="newWisdom" placeholder="Wisdom: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerCharismaForm">
+          <input matInput id="newPlayerCharisma" type="number" [(ngModel)]="newCharisma" placeholder="Charisma: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerInitiativeForm">
+          <input matInput id="newPlayerInitiative" type="number" [(ngModel)]="newInitiative" placeholder="Initiative: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerSpeedForm">
+          <input matInput id="newPlayerSpeed" type="number" [(ngModel)]="newSpeed" placeholder="Speed: ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerAcForm">
+          <input matInput id="newPlayerAc" type="number" [(ngModel)]="newArmorClass" placeholder="Armor Class (AC): ">
+        </mat-form-field><br />
+        <mat-form-field id="newPlayerPerceptionForm">
+          <input matInput id="newPlayerPerception" type="number" [(ngModel)]="newPassivePerception" placeholder="Passive Perception: ">
+        </mat-form-field>
+      </div>
+    </div><br />
+    <!-- Drop Down Menu for changing new player's avatar -->
+    <button mat-raised-button id="btnNewAvatarMenu" color="accent" *ngIf="contributorStatus" class="leftspace" [matMenuTriggerFor]="menu" matTooltip="Add an avatar to your new player">
+      <mat-icon id="newAvatarIcon">{{ newAvatar || avatarList[0] }}</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu" id="newAvatarMenu">
+      <button mat-menu-item id="btnNewAvatar" *ngFor="let avatar of avatarList" (click)="addAvatar(avatar)">
+        <mat-icon id="newAvatar">{{ avatar }}</mat-icon>
+      </button>
+    </mat-menu>
+    <button mat-raised-button color="primary" (click)="addNewPlayer(selectedParty)" class="leftspace" id="btnSaveNewPlayer" matTooltip="Add player to {{ selectedParty.name }}">Save</button>
+    <button mat-raised-button color="secondary" (click)="addPlayer = !addPlayer" class="leftspace" id="btnCancelNewPlayer" matTooltip="Discard the new player">Cancel</button>
+  </div>
+</div>
