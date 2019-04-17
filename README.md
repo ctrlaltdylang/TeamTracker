@@ -4,5 +4,7 @@ To initialize the environment to a workable state, build, run, and test this app
 
 Tech Used:
 -Angular and Angular Material for the front end web UI
+
 -.NET Core 2.2 and C# for the API
+
 -Entity Framework 6 / Entity Framework Core for the InMemoryDatabase
