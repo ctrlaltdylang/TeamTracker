@@ -1,6 +1,7 @@
 <mat-spinner *ngIf="showSpinner" class="spinner" id="loadingSpinner"><!-- Loading spinner, displays in the middle of the page --></mat-spinner>
-<div *ngIf="!showSpinner" id="screenContainer"><!-- Container for whole page, disappears if the loading spinner is enabled -->
-  <!-- Header bar -->
+<div *ngIf="!showSpinner" id="screenContainer">
+  <!-- Container for whole page, disappears if the loading spinner is enabled -->
+  <!-- Header bar -->  
   <mat-toolbar id="header">
     <mat-toolbar-row id="headerRow1">
       <span class="whitespace" id="whiteSpace1"><!-- White space fills screen for alignments, pushes buttons to right side of screen --></span>
@@ -12,73 +13,68 @@
     <mat-toolbar-row id="headerRow2">
       <span id="lblParty">Party: </span>
       <button mat-raised-button color="secondary" class="leftspace" id="changePartyMenu" [matMenuTriggerFor]="menu" matTooltip="Change the active party">{{ selectedParty.name }}</button>
-      <!-- Drop Down Menu for changing active party's logo -->
       <mat-menu #menu="matMenu" id="changePartyList">
         <button mat-menu-item id="btnChangeParty" *ngFor="let party of allParties" (click)="changeSelectedParty(party)"> {{ party.name }}</button>
       </mat-menu>
-      <i class="material-icons leftspace" matTooltip="{{ selectedParty.name }}'s Logo" id="logo">{{ selectedParty.logo }}</i>
+      <img id="selectedPartyLogo" class="image" src="data:image/jpeg;base64,{{ selectedParty.logo }}" matTooltip="{{ selectedParty.name }}'s logo"/>
       <span class="whitespace" id="whiteSpace2"><!-- White space fills screen for alignments, pushes buttons to right side of screen --></span>
       <!-- Add Party button toggles the Add Party UI elements -->
       <button mat-raised-button id="btnAddParty" color="accent" *ngIf="contributorStatus" (click)="toggleAddParty()" matTooltip="Add a party to the current list">
-        Add Party</button>
+        Add Party
+      </button>
       <!-- Edit Party button toggles the Edit Party UI elements -->
       <button mat-raised-button id="btnEditParty" color="accent" class="leftspace" *ngIf="contributorStatus" (click)="toggleEditParty(selectedParty)" matTooltip="Make changes to {{ selectedParty.name }}">
-        Edit Party</button>
+        Edit Party
+      </button>
       <button mat-raised-button color="warn" class="leftspace" id="btnDeleteParty" *ngIf="contributorStatus" (click)="deleteParty(selectedParty.id)"
-              matTooltip="Delete {{ selectedParty.name }}, this will also delete all party members">Delete Party</button>
+              matTooltip="Delete {{ selectedParty.name }}, this will also delete all party members">
+        Delete Party
+      </button>
     </mat-toolbar-row>
   </mat-toolbar>
   <!-- Add Party UI Elements -->
   <div *ngIf="addParty" class="leftspace" id="addPartyElements">
     <mat-form-field id="newPartyInputForm">
       <input matInput id="newPartyInput" placeholder="Party Name: " [(ngModel)]="newPartyName">
-    </mat-form-field>
-    <button mat-raised-button id="addLogoMenu" color="accent" class="leftspace" [matMenuTriggerFor]="menu" matTooltip="Add a logo to the new party">
-      <mat-icon id="newPartyLogoIcon">{{ newPartyLogo || logoList[0] }}</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu" id="addLogoList">
-      <button mat-menu-item id="btnNewLogo" *ngFor="let logo of logoList" (click)="addLogo(logo)">
-        <mat-icon id="newLogo">{{ logo }}</mat-icon>
-      </button>
-    </mat-menu>
-    <button mat-raised-button color="primary" id="btnSaveNewParty" (click)="addNewParty()" class="leftspace" matTooltip="Save the new party to the current list">Save</button>
-    <button mat-raised-button color="secondary" id="btnCancelNewParty" (click)="addParty = !addParty" class="leftspace" matTooltip="Discard the new team">Cancel</button>
+    </mat-form-field><br />
+    <span>Add Logo: </span>
+    <input id="addPartyLogo" accept="image/*" type="file" class="form-control browse" (change)="addLogo($event)"  matTooltip="Add a logo to the new team!"><br />
+    <div class="topSpacing">
+      <button mat-raised-button color="primary" id="btnSaveNewParty" (click)="addNewParty()" class="leftspace" matTooltip="Save the new party to the current list">Save</button>
+      <button mat-raised-button color="secondary" id="btnCancelNewParty" (click)="addParty = !addParty" class="leftspace" matTooltip="Discard the new team">Cancel</button>
+    </div>    
   </div>
   <!-- Edit Party UI Elements -->
   <div *ngIf="updateParty" class="leftspace" id="editPartyElements">
     <mat-form-field id="updatePartyInputForm">
       <input matInput id="updatePartyInput" placeholder="New Party Name: " [(ngModel)]="updatePartyName">
-    </mat-form-field>
-    <button mat-raised-button color="accent" class="leftspace" btn="updateLogoMenu" [matMenuTriggerFor]="menu" matTooltip="Change the logo for {{ selectedParty.name }}">
-      <mat-icon id="updatePartyLogoIcon">{{ updatePartyLogo || selectedParty.logo }}</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu" id="updateLogoList">
-      <button mat-menu-item id="btnUpdateLogo" *ngFor="let logo of logoList" (click)="changeLogo(logo)">
-        <mat-icon id="updateLogo">{{ logo }}</mat-icon>
-      </button>
-    </mat-menu>
-    <button mat-raised-button color="primary" (click)="putParty(selectedParty)" class="leftspace" id="btnSaveUpdatedParty" matTooltip="Save the changes made to {{ selectedParty.name }}">Save</button>
-    <button mat-raised-button color="secondary" (click)="updateParty = !updateParty" class="leftspace" id="btnCancelUpdatedParty" matTooltip="Discard the changes made to {{ selectedParty.name }}">Cancel</button>
+    </mat-form-field><br />
+    <span>Update {{ selectedParty.name }}'s logo: </span>
+    <input id="updatePartyLogo" accept="image/*" type="file" class="form-control browse leftspace" (change)="updateLogo($event)"  matTooltip="Update {{ selectedParty.name }}'s logo"><br/>
+    <div class="topSpacing">
+      <button mat-raised-button color="primary" (click)="putParty(selectedParty)" class="leftspace" id="btnSaveUpdatedParty" matTooltip="Save the changes made to {{ selectedParty.name }}">Save</button>
+      <button mat-raised-button color="secondary" (click)="updateParty = !updateParty" class="leftspace" id="btnCancelUpdatedParty" matTooltip="Discard the changes made to {{ selectedParty.name }}">Cancel</button>
+    </div>
   </div>
   <h3 class="leftspace" id="lblPlayers">Players: </h3>
   <!-- List of players belonging to the active party -->
   <!-- Inputs are disabled if application is in Visitor Mode -->
-  <mat-accordion class="bottomSpacing" id="playersContainer">
+  <mat-accordion id="playersContainer">
     <mat-expansion-panel id="playersPanel" *ngFor="let player of partyPlayers" (opened)="openPanel(player)">
       <mat-expansion-panel-header id="playersPanelHeader">
-        <mat-panel-title id="playersPanelTitle">
-          <i style="margin-right: 15px;" class="material-icons" id="playerAvatar" matTooltip="{{ player.name }}'s avatar">{{ player.avatar }}</i>
-          {{ player.name }}
-        </mat-panel-title>
+        <mat-panel-title id="playersPanelTitle">{{ player.name }}</mat-panel-title>
       </mat-expansion-panel-header>
       <div *ngIf="contributorStatus" id="contributorPlayerContainer">
         <mat-form-field id="updatePlayerNameForm">
           <input matInput id="updatePlayerName" [(ngModel)]="updatePlayerName" placeholder="Update Player Name: ">
         </mat-form-field><br />
       </div>
-      <!-- Displays player info in two columns -->
+      <!-- Displays player info in three columns -->
       <div class="row" id="playerTable">
-        <div class=" column" id="column1">
+        <div class="avatarColumn" id="playerAvatarColumn">
+          <img id="selectedPlayerLogo" class="image" src="data:image/jpeg;base64,{{ player.avatar }}" matTooltip="{{ player.name }}'s Avatar" *ngIf="player.avatar != null"/>
+        </div>
+        <div class="statsColumn" id="playerStatsColumn1">
           <mat-form-field id="updatePlayerLevelForm">
             <input matInput id="updatePlayerLevel" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateLevel" placeholder="Level: ">
           </mat-form-field><br />
@@ -104,7 +100,7 @@
             <input matInput id="updatePlayerDex" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateDexterity" placeholder="Dexterity: ">
           </mat-form-field><br />
         </div>
-        <div class="column" id="column2">
+        <div class="statsColumn" id="playerStatsColumn2">
           <mat-form-field id="updatePlayerConForm">
             <input matInput id="updatePlayerCon" type="number" [disabled]="!contributorStatus" [(ngModel)]="updateConstitution" placeholder="Constitution: ">
           </mat-form-field><br />
@@ -132,20 +128,14 @@
         </div>
       </div>
       <br />
+      <span *ngIf="contributorStatus">Update {{ player.name }}'s Avatar: </span>
+      <input id="updatePlayerAvatar" accept="image/*" type="file" class="form-control browse" (change)="updatePlayerAvatar($event)" *ngIf="contributorStatus" ><br />
+      <div class="topSpacing">
       <button mat-raised-button color="primary" *ngIf="contributorStatus" (click)="updatePlayer(selectedParty, player)"
               matTooltip="Save changes made to {{ player.name }}" id="btnSavePlayer">Save</button>
-      <!-- Drop Down Menu for changing selected player's avatar -->
-      <button mat-raised-button color="accent" *ngIf="contributorStatus" class="leftspace" id="btnChangeAvatarMenu" [matMenuTriggerFor]="menu"
-              matTooltip="Change {{ player.name }}'s avatar">
-        <mat-icon id="avatarIcon">{{ updateAvatar || player.avatar }}</mat-icon>
-      </button>
-      <mat-menu #menu="matMenu" id="avatarMenu">
-        <button mat-menu-item *ngFor="let avatar of avatarList" (click)="changeAvatar(avatar)" id="btnChangeAvatar">
-          <mat-icon id="newAvatarIcon">{{ avatar }}</mat-icon>
-        </button>
-      </mat-menu>
       <button mat-raised-button color="warn" class="leftspace" *ngIf="contributorStatus" (click)="deletePlayer(player.id, selectedParty.id)"
               matTooltip="This cannot be undone!" id="btnDeletePlayer">Delete {{ player.name }}</button>
+      </div>
     </mat-expansion-panel>
   </mat-accordion>
   <mat-toolbar id="addPlayerToolbar">
@@ -156,9 +146,9 @@
     </mat-toolbar-row>
   </mat-toolbar>
   <!-- Add Player UI Elements -->
-  <div *ngIf="addPlayer" class="leftspace bottomSpacing" id="addPlayerElements">
+  <div *ngIf="addPlayer" class="leftspace" id="addPlayerElements">
     <div class="row" id="addPlayerTable">
-      <div class="column" id="addPlayerColumn1">
+      <div class="column">
         <mat-form-field id="newPlayerNameForm">
           <input matInput id="newPlayerName" [(ngModel)]="newPlayerName" placeholder="Name: ">
         </mat-form-field><br />
@@ -184,7 +174,7 @@
           <input matInput id="newPlayerCon" type="number" [(ngModel)]="newConstitution" placeholder="Constitution: ">
         </mat-form-field>
       </div>
-      <div class="column" id="addPlayerColumn1">
+      <div class="column">
         <mat-form-field id="newPlayerIntForm">
           <input matInput id="newPlayerInt" type="number" [(ngModel)]="newIntelligence" placeholder="Intelligence: ">
         </mat-form-field><br />
@@ -208,16 +198,11 @@
         </mat-form-field>
       </div>
     </div><br />
-    <!-- Drop Down Menu for changing new player's avatar -->
-    <button mat-raised-button id="btnNewAvatarMenu" color="accent" *ngIf="contributorStatus" class="leftspace" [matMenuTriggerFor]="menu" matTooltip="Add an avatar to your new player">
-      <mat-icon id="newAvatarIcon">{{ newAvatar || avatarList[0] }}</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu" id="newAvatarMenu">
-      <button mat-menu-item id="btnNewAvatar" *ngFor="let avatar of avatarList" (click)="addAvatar(avatar)">
-        <mat-icon id="newAvatar">{{ avatar }}</mat-icon>
-      </button>
-    </mat-menu>
-    <button mat-raised-button color="primary" (click)="addNewPlayer(selectedParty)" class="leftspace" id="btnSaveNewPlayer" matTooltip="Add player to {{ selectedParty.name }}">Save</button>
-    <button mat-raised-button color="secondary" (click)="addPlayer = !addPlayer" class="leftspace" id="btnCancelNewPlayer" matTooltip="Discard the new player">Cancel</button>
+    <span class="leftspace">Add Avatar: </span>
+    <input id="addPlayerAvatar" accept="image/*" type="file" class="form-control browse leftspace" (change)="addAvatar($event)" *ngIf="contributorStatus" matTooltip="Give the new player an avatar!"><br />
+    <div class="topSpacing leftspace bottomSpacing">
+      <button style="margin-top: 15px;" mat-raised-button color="primary" (click)="addNewPlayer(selectedParty)" id="btnSaveNewPlayer" matTooltip="Add player to {{ selectedParty.name }}">Save</button>
+      <button mat-raised-button color="secondary" (click)="addPlayer = !addPlayer" class="leftspace" id="btnCancelNewPlayer" matTooltip="Discard the new player">Cancel</button>
+    </div>
   </div>
 </div>
